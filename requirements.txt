@@ -1,0 +1,3 @@
+--pre --extra-index-url https://kivy.org/downloads/simple/
+opencv-python
+kivy[base]
