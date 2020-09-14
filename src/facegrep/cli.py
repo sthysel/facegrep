@@ -7,18 +7,18 @@ from kivy.uix.image import Image
 
 class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
-        super(KivyCamera, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.capture = capture
         Clock.schedule_interval(self.update, 1.0 / fps)
 
     def update(self, dt):
-        faceCascade = cv.CascadeClassifier(
+        face_cascade = cv.CascadeClassifier(
             "haarcascades/haarcascade_frontalface_default.xml")
 
         ret, frame = self.capture.read()
         if ret:
-            frameGray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            faces = faceCascade.detectMultiScale(frameGray, 1.1, 4)
+            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
             for (x, y, w, h) in faces:
                 cv.rectangle(
@@ -29,7 +29,7 @@ class KivyCamera(Image):
                     2,
                 )
 
-            # convert it to texture
+            # convert frame to texture
             buf1 = cv.flip(frame, 0)
             buf = buf1.tostring()
             image_texture = Texture.create(
