@@ -13,10 +13,9 @@ from kivymd.uix.button import MDRectangleFlatButton
 from datetime import datetime
 
 class KivyCamera(Image):
-    def __init__(self, capture, fps, **kwargs):
+    def __init__(self, capture, **kwargs):
         super().__init__(**kwargs)
         self.capture = capture
-        Clock.schedule_interval(self.update, 1.0 / fps)
 
     def update(self, dt):
         face_cascade = cv.CascadeClassifier(
@@ -47,22 +46,37 @@ class KivyCamera(Image):
             self.texture = image_texture
 
 
+class ScreenShotButton(MDRectangleFlatButton):
+    def __init__(self, text='Screen Shot'):
+        super().__init__(text=text)
+
+    def update(self, dt):
+        self.size[0] = self.parent.size[0] - 10
+        self.pos[0] = 5
+        self.pos[1] = 5
+
+
 class CamApp(MDApp):
     def build(self):
         self.parent = BoxLayout(orientation='vertical')
 
         self.capture = cv.VideoCapture(0)
-        self.my_camera = KivyCamera(capture=self.capture, fps=30)
+        self.my_camera = KivyCamera(capture=self.capture)
         self.parent.add_widget(self.my_camera)
         
         # Button Setup
-        self.shot_btn = MDRectangleFlatButton(text='Screen Shot')
+        self.shot_btn = ScreenShotButton()
         self.shot_btn.bind(on_release=self.screen_shot)
-        self.shot_btn.increment_width = Window.size[0]
         self.parent.add_widget(self.shot_btn)
-                
+
+        # Setup Update
+        fps = 30
+        Clock.schedule_interval(self.update, 1.0 / fps)
         return self.parent
 
+    def update ( self, dt ):
+        self.my_camera.update(dt)
+        self.shot_btn.update(dt)
 
 
     def screen_shot(self, obj):
