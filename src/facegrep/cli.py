@@ -1,9 +1,16 @@
 import cv2 as cv
-from kivy.app import App
+from kivymd.app import MDApp
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.image import Image
 
+ 
+from kivy.core.window import Window
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.widget import Widget
+from kivymd.uix.button import MDRectangleFlatButton
+
+from datetime import datetime
 
 class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
@@ -40,14 +47,35 @@ class KivyCamera(Image):
             self.texture = image_texture
 
 
-class CamApp(App):
+class CamApp(MDApp):
     def build(self):
+        self.parent = BoxLayout(orientation='vertical')
+
         self.capture = cv.VideoCapture(0)
         self.my_camera = KivyCamera(capture=self.capture, fps=30)
-        return self.my_camera
+        self.parent.add_widget(self.my_camera)
+        
+        # Button Setup
+        self.shot_btn = MDRectangleFlatButton(text='Screen Shot')
+        self.shot_btn.bind(on_release=self.screen_shot)
+        self.shot_btn.increment_width = Window.size[0]
+        self.parent.add_widget(self.shot_btn)
+                
+        return self.parent
+
+
+
+    def screen_shot(self, obj):
+        # Finds the number to add after name.
+        name = "face"
+        datename = datetime.now().strftime('%H_%M_%S_%d_%m_%Y.log')
+        # saves file
+        self.my_camera.export_to_png(name + datename + ".png")
+
 
     def on_stop(self):
         self.capture.release()
+
 
 
 if __name__ == '__main__':
