@@ -54,13 +54,11 @@ class CamApp(MDApp):
         self.capture = cv.VideoCapture(0)
         self.my_camera = KivyCamera(capture=self.capture, fps=30)
         self.parent.add_widget(self.my_camera)
-        
-        # Button Setup
+
         self.shot_btn = MDRectangleFlatButton(text='Screen Shot')
         self.shot_btn.bind(on_release=self.screen_shot)
         self.shot_btn.increment_width = Window.size[0]
         self.parent.add_widget(self.shot_btn)
-                
         return self.parent
 
 
