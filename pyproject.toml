@@ -1,14 +1,18 @@
 [tool.poetry]
-name = "{{cookiecutter.app_name}}"
+name = "facegrep"
 version = "0.0.1"
-description = "{{cookiecutter.app_description}}"
-authors = [{{cookiecutter.full_name}} {{cookiecutter.email}}]
+description = "Greps Yo face"
+authors = ["sthysel sthysel@gmail"]
+
+[[tool.poetry.source]]
+name = "kivy"
+url = "https://kivy.org/downloads/simple/"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 android-tool = "^1.1.2"
-kivy = "^1.11.1"
-kivymd = "^0.104.1"
+kivy = { url="https://kivy.org/downloads/ci/linux/kivy/Kivy-2.0.0rc3-cp38-cp38-manylinux2010_x86_64.whl" }
+kivymd = "*"
 pyjnius = "^1.3.0"
 plyer = "^1.4.3"
 
@@ -21,7 +25,7 @@ isort = "^4.3.21"
 
 [tool.coverage.run]
 branch = true
-source = "{{cookiecutter.app_name}}"
+source = "facegrep"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
