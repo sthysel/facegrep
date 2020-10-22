@@ -1,11 +1,11 @@
 FROM python:3.8-slim
 
-RUN mkdir /opt/{{cookiecutter.app_name}}
+RUN mkdir /opt/facegrep
 
 RUN python -m pip install --upgrade pip
 
 RUN python -m pip install poetry
-WORKDIR /opt/{{cookiecutter.app_name}}
+WORKDIR /opt/facegrep
 
 COPY poetry.lock .
 COPY pyproject.toml .
