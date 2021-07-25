@@ -1,7 +1,7 @@
 # buildozer container to build and deploy android app
 FROM python:3.7-slim
 
-ENV USER="user"
+ENV USER="builder"
 ENV HOME_DIR="/home/${USER}"
 ENV WORK_DIR="${HOME_DIR}/hostcwd"
 ENV PATH="${HOME_DIR}/.local/bin:${PATH}"
@@ -14,51 +14,47 @@ RUN apt update -qq > /dev/null \
 # Workaround for bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=863199#23
 RUN mkdir -p /usr/share/man/man1
 
-RUN DEBIAN_FRONTEND=noninteractive  apt install wget gnupg software-properties-common --yes --no-install-recommends
+RUN DEBIAN_FRONTEND=noninteractive apt install --yes --no-install-recommends \
+  autoconf \
+  automake \
+  build-essential \
+  ccache \
+  cmake \
+  gettext \
+  git \
+  gnupg \
+  libc6 \
+  libffi-dev \
+  libltdl-dev \
+  libssl-dev \
+  libtool \
+  patch \
+  pkg-config \
+  software-properties-common \
+  sudo \
+  unzip \
+  usbutils \
+  wget \
+  zip \
+  zlib1g-dev
 
 RUN wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
-
 RUN add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/
 
 # system requirements to build most of the recipes
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install --yes --no-install-recommends adoptopenjdk-8-hotspot
-
-RUN DEBIAN_FRONTEND=noninteractive apt install --yes --no-install-recommends \
-    autoconf \
-    automake \
-    build-essential \
-    ccache \
-    cmake \
-    gettext \
-    git \
-    libc6 \
-    libffi-dev \
-    libltdl-dev \
-    libssl-dev \
-    libtool \
-    patch \
-    pkg-config \
-    sudo \
-    unzip \
-    usbutils \
-    zip \
-    zlib1g-dev
-
 
 # android ndk
 ENV ANDROID_NDK_HOME /opt/android-ndk
 ENV ANDROID_NDK_VERSION r19c
 
 RUN mkdir /opt/android-ndk-tmp && \
-    cd /opt/android-ndk-tmp && \
-    wget -q https://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
-# uncompress
-    unzip -q android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
-# move to its final location
-    mv ./android-ndk-${ANDROID_NDK_VERSION} ${ANDROID_NDK_HOME} && \
-# remove temp dir
-    cd ${ANDROID_NDK_HOME} && \
-    rm -rf /opt/android-ndk-tmp
+  cd /opt/android-ndk-tmp && \
+  wget -q https://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
+  unzip -q android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
+  mv ./android-ndk-${ANDROID_NDK_VERSION} ${ANDROID_NDK_HOME} && \
+  cd ${ANDROID_NDK_HOME} && \
+  rm -rf /opt/android-ndk-tmp
 
 # add to PATH
 ENV PATH ${PATH}:${ANDROID_NDK_HOME}
@@ -67,16 +63,16 @@ ENV PATH ${PATH}:${ANDROID_NDK_HOME}
 ARG ANT_VERSION=1.9.4
 WORKDIR /opt
 RUN wget -q http://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz && \
-    tar xzf apache-ant-*.tar.gz && \
-    rm apache-ant-*.tar.gz
+  tar xzf apache-ant-*.tar.gz && \
+  rm apache-ant-*.tar.gz
 
 # android sdk
 ARG ANDROID_SDK_VERSION=6609375
 ENV ANDROID_SDK_ROOT /opt/android-sdk
 RUN mkdir -p ${ANDROID_SDK_ROOT} && \
-    wget -q https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_VERSION}_latest.zip && \
-    unzip *tools*linux*.zip -d ${ANDROID_SDK_ROOT} && \
-    rm *tools*linux*.zip
+  wget -q https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_VERSION}_latest.zip && \
+  unzip *tools*linux*.zip -d ${ANDROID_SDK_ROOT} && \
+  rm *tools*linux*.zip
 
 WORKDIR ${ANDROID_SDK_ROOT}
 RUN yes 2>/dev/null | /opt/android-sdk/tools/bin/sdkmanager --sdk_root=/opt/android-sdk --licenses

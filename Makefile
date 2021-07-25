@@ -1,8 +1,8 @@
-.PHONY: tests clean quality
-
-.PHONY: help
+.PHONY: tests clean quality help
 
 .DEFAULT_GOAL := help
+
+UID := $(shell id -u):$(shell id -g)
 
 help:
 	@grep --no-filename -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -42,19 +42,29 @@ poetry: build-devbox ## Run poetry command in dev container
 	$(call execute_cmd) $(POETRY_ARGS)
 
 distclean: build-buildozer ## Clean out build container
-	docker run --interactive --tty --rm -v buildozer_home:/home/user/.buildozer  --volume ${CURDIR}:/home/user/hostcwd facegrep-buildozer distclean
+	docker run \
+		--user $(UID) \
+		--interactive \
+		--tty \
+		--rm \
+		--mount "type=bind,src=.buildozer,dst=/root/.buildozer" \
+		--mount "type=bind,src=${CURDIR},dst=/home/user/hostcwd" \
+		facegrep-buildozer distclean
 
 build-buildozer: ## Build using buildozer
 	docker build -t facegrep-buildozer -f Dockerfile .
 
 deploy: build-buildozer ## Deploy android application
-	docker run -it \
-	  --privileged \
-	  --volume /dev/bus/usb:/dev/bus/usb \
-	  --volume buildozer_home:/root/.buildozer \
-	  --volume gradle_cache:/root/.gradle \
-	  --volume ${CURDIR}:/home/user/hostcwd \
-	  facegrep-buildozer android debug deploy run logcat
+	docker run \
+		--interactive \
+		--tty \
+		--user $(UID) \
+		--privileged \
+		--mount "type=bind,src=/dev/bus/usb,dst=/dev/bus/usb" \
+		--mount "type=bind,src=.buildozer/,dst=/root/.buildozer" \
+		--mount "type=bind,src=.gradle_cache,dst=/root/.gradle" \
+		--mount "type=bind,src=${CURDIR},dst=/home/builder/hostcwd" \
+		facegrep-buildozer android debug deploy run logcat
 
 build-ide: ## Build developer container for IDE
 	docker build -t facegrep-ide -f Dockerfile.ide .
